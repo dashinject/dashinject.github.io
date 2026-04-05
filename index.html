@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dash Inject</title>
+<style>
+@font-face{font-family:'Pusab';src:url('PUSAB___.otf') format('opentype')}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a1628;color:#fff;min-height:100vh;overflow-x:hidden}
+.gd-text{font-family:'Pusab',sans-serif;font-weight:400}
+.outline{text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 2px 4px rgba(0,0,0,.5)}
+.bg-wrap{position:fixed;inset:0;z-index:-2;overflow:hidden}
+.bg-img{position:absolute;top:0;left:0;height:100%;width:200%;background:url('bg.png') repeat-x;background-size:auto 100%;animation:bgScroll 60s linear infinite}
+@keyframes bgScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+header{background:rgba(10,22,40,.95);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1a3a5a;position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo img{width:40px;height:40px;border-radius:50%}
+.logo span{font-family:'Pusab',sans-serif;font-weight:400;font-size:16px;color:#00ff88;text-transform:uppercase;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+nav{display:flex;gap:3px}
+.nav-btn{font-family:'Pusab',sans-serif;font-weight:400;padding:8px 14px;background:0 0;border:none;color:#6699bb;font-size:10px;cursor:pointer;border-radius:4px;text-transform:uppercase;transition:.15s}
+.nav-btn:hover{background:rgba(0,255,136,.1);color:#00ff88}
+.nav-btn.active{background:linear-gradient(180deg,#00aa55,#008844);color:#fff}
+.header-right{display:flex;align-items:center;gap:8px;position:relative}
+.user-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid #2a4a6a;padding:3px 10px 3px 3px;border-radius:20px;cursor:pointer;transition:.15s}
+.user-pill:hover{background:rgba(255,255,255,.12)}
+.user-pfp{width:26px;height:26px;border-radius:50%;object-fit:cover}
+.user-pill span{font-size:11px;color:#aaccee}
+.user-tag{font-size:9px;color:#6699aa}
+.mod-badge{width:14px;height:14px;margin-left:2px}
+.dropdown{position:absolute;top:100%;right:0;margin-top:6px;background:#0d2540;border:2px solid #2a4a6a;border-radius:8px;min-width:150px;display:none;overflow:hidden;z-index:200}
+.dropdown.show{display:block}
+.dropdown-item{display:flex;align-items:center;gap:8px;padding:9px 12px;color:#88bbdd;font-size:10px;cursor:pointer;transition:.1s}
+.dropdown-item:hover{background:rgba(0,255,136,.15)}
+.dropdown-item.danger{color:#ff7777}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.page{display:none}
+.page.active{display:block}
+.btn{font-family:'Pusab',sans-serif;font-weight:400;padding:7px 12px;border:none;border-radius:4px;font-size:9px;cursor:pointer;text-transform:uppercase;transition:.15s}
+.btn-primary{background:linear-gradient(180deg,#00cc44,#009933);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:linear-gradient(180deg,#3377aa,#225588);color:#fff}
+.btn-outline{background:0 0;color:#66aadd;border:1px solid #335577}
+.btn-small{padding:5px 8px;font-size:8px}
+.btn-play{background:linear-gradient(180deg,#aa44ff,#7722cc);color:#fff}
+.btn-danger{background:linear-gradient(180deg,#cc3333,#aa2222);color:#fff}
+.search-bar{display:flex;gap:6px;margin-bottom:12px}
+.search-input{flex:1;padding:9px 12px;background:rgba(0,20,40,.8);border:1px solid #1a3a5a;border-radius:4px;color:#fff;font-size:11px}
+.search-input:focus{outline:none;border-color:#00ff88}
+.search-input::placeholder{color:#446688}
+.tabs{display:flex;gap:2px;margin-bottom:10px}
+.tab{padding:6px 12px;background:0 0;border:none;color:#5588aa;font-size:9px;cursor:pointer;border-radius:4px}
+.tab:hover{background:rgba(0,255,136,.1)}
+.tab.active{background:#00aa55;color:#fff}
+.levels-list{display:flex;flex-direction:column;gap:6px}
+.level-card{background:rgba(10,30,50,.85);border:1px solid #1a3a5a;border-radius:5px;padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:.15s}
+.level-card:hover{border-color:#00aa55}
+.level-face{width:30px;height:30px;object-fit:contain}
+.level-info{flex:1;min-width:0}
+.level-name{font-family:'Pusab',sans-serif;font-weight:400;font-size:11px;color:#fff}
+.level-author{font-size:8px;color:#6699aa;display:flex;align-items:center;gap:3px}
+.level-id{font-size:7px;color:#446688;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:2px;margin-left:4px}
+.level-stats{font-size:8px;color:#557788}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,5,15,.94);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:linear-gradient(180deg,#0d2540,#081828);border:2px solid #00aa55;border-radius:8px;padding:16px;max-width:360px;width:100%;position:relative;max-height:85vh;overflow-y:auto}
+.modal-close{position:absolute;top:6px;right:6px;background:#993333;border:none;color:#fff;width:20px;height:20px;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-title{font-family:'Pusab',sans-serif;font-weight:400;font-size:14px;color:#00ff88;text-transform:uppercase;text-align:center;margin-bottom:12px}
+.form-group{margin-bottom:8px}
+.form-label{display:block;font-size:8px;color:#6699bb;text-transform:uppercase;margin-bottom:2px}
+.form-input,.form-select{width:100%;padding:8px 10px;background:#051525;border:1px solid #1a3050;border-radius:4px;color:#fff;font-size:11px}
+.form-input:focus,.form-select:focus{outline:none;border-color:#00ff88}
+textarea.form-input{min-height:50px;resize:vertical;font-family:inherit}
+.form-footer{text-align:center;margin-top:8px;font-size:9px;color:#6688aa}
+.form-footer a{color:#00ff88;cursor:pointer}
+.google-btn{width:100%;padding:9px;background:#fff;border:none;border-radius:4px;color:#333;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.google-btn:hover{background:#f0f0f0}
+.google-btn svg{width:16px;height:16px}
+.divider{display:flex;align-items:center;gap:8px;margin:10px 0;color:#446688;font-size:9px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1a3a5a}
+.play-layout{display:grid;grid-template-columns:1fr 280px;gap:14px;height:calc(100vh - 120px)}
+.game-container{background:#000;border-radius:6px;overflow:hidden;position:relative}
+.game-frame{width:100%;height:100%;border:none}
+.game-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#000;color:#557788;font-size:13px}
+.level-sidebar{background:rgba(10,30,50,.9);border:1px solid #1a3a5a;border-radius:6px;padding:10px;overflow-y:auto}
+.sidebar-title{font-family:'Pusab',sans-serif;font-weight:400;font-size:10px;color:#00ff88;text-transform:uppercase;margin-bottom:8px}
+.sidebar-level{background:rgba(0,20,40,.6);border:1px solid #1a3050;border-radius:4px;padding:6px 8px;margin-bottom:4px;cursor:pointer;transition:.15s}
+.sidebar-level:hover{border-color:#00aa55}
+.sidebar-level-name{font-size:10px;color:#fff}
+.sidebar-level-author{font-size:8px;color:#6699aa}
+.profile-header{display:flex;align-items:center;gap:12px;background:rgba(10,30,50,.85);border:1px solid #1a3a5a;border-radius:6px;padding:14px;margin-bottom:12px}
+.profile-pfp{width:60px;height:60px;border-radius:50%;border:2px solid #00ff88;object-fit:cover}
+.profile-info{flex:1}
+.profile-name{font-family:'Pusab',sans-serif;font-weight:400;font-size:16px;color:#fff;display:flex;align-items:center;gap:6px}
+.profile-tag{font-size:10px;color:#6699aa;margin-top:1px}
+.profile-role{font-size:9px;color:#00ff88;text-transform:uppercase;margin-top:2px}
+.profile-stats{display:flex;gap:14px;margin-top:6px;font-size:10px;color:#88aabb}
+.profile-stats span{display:flex;align-items:center;gap:3px}
+.profile-stats img{width:14px;height:14px}
+.profile-socials{display:flex;gap:8px;margin-top:8px}
+.social-link{font-size:9px;color:#55aaff;text-decoration:none}
+.social-link:hover{text-decoration:underline}
+.section-title{font-family:'Pusab',sans-serif;font-weight:400;font-size:10px;color:#00ff88;text-transform:uppercase;margin-bottom:8px}
+.leaderboard{background:rgba(10,30,50,.9);border:1px solid #1a3a5a;border-radius:6px;overflow:hidden}
+.lb-header{background:linear-gradient(180deg,#ffcc00,#ff9900);padding:12px;text-align:center}
+.lb-header-title{font-family:'Pusab',sans-serif;font-weight:400;font-size:18px;color:#fff;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000}
+.lb-list{max-height:500px;overflow-y:auto}
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #1a3050;background:linear-gradient(180deg,rgba(139,90,43,.3),rgba(101,67,33,.3))}
+.lb-row:nth-child(even){background:linear-gradient(180deg,rgba(120,80,40,.3),rgba(90,60,30,.3))}
+.lb-rank{font-family:'Pusab',sans-serif;font-weight:400;font-size:14px;color:#fff;width:30px;text-align:center}
+.lb-user{flex:1;display:flex;align-items:center;gap:8px}
+.lb-pfp{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.lb-name{font-family:'Pusab',sans-serif;font-weight:400;font-size:12px;color:#fff}
+.lb-stats{display:flex;gap:12px;font-size:10px;color:#aabbcc}
+.lb-stats span{display:flex;align-items:center;gap:3px}
+.lb-stats img{width:12px;height:12px}
+.forum-post{background:rgba(10,30,50,.85);border:1px solid #1a3a5a;border-radius:5px;padding:10px 12px;margin-bottom:8px}
+.forum-post-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.forum-post-pfp{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.forum-post-author{font-size:10px;color:#88ccee}
+.forum-post-time{font-size:8px;color:#557788;margin-left:auto}
+.forum-post-title{font-family:'Pusab',sans-serif;font-weight:400;font-size:12px;color:#fff;margin-bottom:4px}
+.forum-post-content{font-size:11px;color:#aabbcc;line-height:1.4}
+.forum-post-footer{display:flex;gap:12px;margin-top:8px;font-size:9px;color:#6699aa}
+.update-log{background:rgba(10,30,50,.85);border:1px solid #1a3a5a;border-radius:6px;padding:12px}
+.update-entry{border-bottom:1px solid #1a3a5a;padding:8px 0}
+.update-entry:last-child{border-bottom:none}
+.update-date{font-size:8px;color:#66aacc;margin-bottom:2px}
+.update-text{font-size:10px;color:#aabbcc;line-height:1.4}
+.toast{position:fixed;bottom:12px;right:12px;background:#00aa44;color:#fff;padding:8px 14px;border-radius:4px;font-size:10px;transform:translateY(50px);opacity:0;transition:.25s;z-index:2000}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:#cc3333}
+.loading,.empty{text-align:center;padding:24px;color:#557788}
+.spinner{width:22px;height:22px;border:2px solid #1a3050;border-top-color:#00ff88;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pfp-upload{width:60px;height:60px;border-radius:50%;border:2px dashed #335577;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin:0 auto 8px}
+.pfp-upload:hover{border-color:#00ff88}
+.pfp-upload img{width:100%;height:100%;object-fit:cover}
+.pfp-upload-text{font-size:8px;color:#557788;text-align:center}
+.rate-grid{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.rate-opt{width:28px;height:28px;cursor:pointer;border:2px solid transparent;border-radius:3px;padding:1px}
+.rate-opt:hover{border-color:#0088ff}
+.rate-opt.selected{border-color:#00ff88}
+.rate-opt img{width:100%;height:100%;object-fit:contain}
+.delete-btn{width:24px;height:24px;cursor:pointer;opacity:.7;transition:.15s}
+.delete-btn:hover{opacity:1}
+input[type=file]{display:none}
+.cp-input{width:60px;padding:4px 6px;background:#051525;border:1px solid #1a3050;border-radius:3px;color:#fff;font-size:10px;text-align:center}
+</style>
+</head>
+<body>
+<div class="bg-wrap"><div class="bg-img"></div></div>
+<header>
+<div class="logo"><img src="logo.png" alt=""><span class="outline">Dash Inject</span></div>
+<nav>
+<button class="nav-btn active" data-page="levels">Levels</button>
+<button class="nav-btn" data-page="play">Play</button>
+<button class="nav-btn" data-page="forums">Forums</button>
+<button class="nav-btn" data-page="leaderboard">Leaderboard</button>
+<button class="nav-btn" data-page="updates">Updates</button>
+</nav>
+<div class="header-right" id="headerAuth">
+<button class="btn btn-outline btn-small" onclick="showModal('login')">Login</button>
+<button class="btn btn-primary btn-small" onclick="showModal('register')">Sign Up</button>
+</div>
+</header>
+<main>
+<div class="page active" id="page-levels">
+<div class="search-bar">
+<input type="text" class="search-input" id="searchInput" placeholder="Search levels...">
+<button class="btn btn-secondary" onclick="searchLevels()">Search</button>
+<button class="btn btn-primary" onclick="showUploadModal()">+ Upload</button>
+</div>
+<div class="tabs">
+<button class="tab active" data-sort="downloads">Popular</button>
+<button class="tab" data-sort="createdAt">New</button>
+</div>
+<div class="levels-list" id="levelsList"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+</div>
+<div class="page" id="page-play">
+<div class="play-layout">
+<div class="game-container" id="gameContainer"><div class="game-placeholder" id="gamePlaceholder">Select a level from the list →</div></div>
+<div class="level-sidebar">
+<div class="sidebar-title">Available Levels</div>
+<div id="sidebarLevels"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+</div>
+</div>
+<div class="page" id="page-forums">
+<div class="search-bar">
+<input type="text" class="search-input" id="forumSearch" placeholder="Search forums...">
+<button class="btn btn-primary" onclick="showModal('newpost')">+ New Post</button>
+</div>
+<div id="forumPosts"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+<div class="page" id="page-leaderboard">
+<div class="leaderboard">
+<div class="lb-header"><div class="lb-header-title outline">The Top 100</div></div>
+<div class="lb-list" id="lbList"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+</div>
+<div class="page" id="page-updates">
+<div class="section-title">Update Log</div>
+<div id="updateLogContent"><div class="loading"><div class="spinner"></div></div></div>
+<div id="updateLogEditor" style="display:none;margin-top:12px">
+<textarea class="form-input" id="newUpdateText" placeholder="Write update..."></textarea>
+<button class="btn btn-primary" style="margin-top:4px" onclick="postUpdate()">Post</button>
+</div>
+</div>
+<div class="page" id="page-profile"></div>
+<div class="page" id="page-level"></div>
+</main>
+<div class="modal-overlay" id="modal-login">
+<div class="modal">
+<button class="modal-close" onclick="hideModal('login')">×</button>
+<h3 class="modal-title">Login</h3>
+<button class="google-btn" onclick="googleSignIn()"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+<div class="divider">or email</div>
+<div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="loginEmail"></div>
+<div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="loginPassword"></div>
+<button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="login()">Login</button>
+<div class="form-footer">No account? <a onclick="showModal('register');hideModal('login')">Sign up</a></div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-register">
+<div class="modal">
+<button class="modal-close" onclick="hideModal('register')">×</button>
+<h3 class="modal-title">Sign Up</h3>
+<button class="google-btn" onclick="googleSignIn()"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+<div class="divider">or email</div>
+<div class="form-group"><label class="form-label">Profile Picture</label><div class="pfp-upload" id="regPfpUpload" onclick="document.getElementById('regPfpInput').click()"><span class="pfp-upload-text">Click to<br>upload</span></div><input type="file" id="regPfpInput" accept="image/*"></div>
+<div class="form-group"><label class="form-label">Display Name</label><input type="text" class="form-input" id="registerName"></div>
+<div class="form-group"><label class="form-label">Tag (@username)</label><input type="text" class="form-input" id="registerTag" maxlength="20"></div>
+<div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="registerEmail"></div>
+<div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="registerPassword"></div>
+<button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="register()">Create Account</button>
+<div class="form-footer">Have account? <a onclick="showModal('login');hideModal('register')">Login</a></div>
+</div>
+</div>
+<div class="modal-overlay" id="modal-upload">
+<div class="modal" style="max-width:400px">
+<button class="modal-close" onclick="hideModal('upload')">×</button>
+<h3 class="modal-title">Upload Level</h3>
+<div class="form-group"><label class="form-label">Level Name</label><input type="text" class="form-input" id="uploadName"></div>
+<div class="form-group"><label class="form-label">Song Name</label><input type="text" class="form-input" id="uploadSong"></div>
+<div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="uploadDesc"></textarea></div>
+<div class="form-group"><label class="form-label">Level Data (GZip+Base64)</label><textarea class="form-input" id="uploadData" style="font-family:monospace;font-size:8px;min-height:60px"></textarea></div>
+<button class="btn btn-primary" style="width:100%;margin-top:4px" id="uploadBtn" onclick="uploadLevel()">Upload (+10 Cubes)</button>
+</div>
+</div>
+<div class="modal-overlay" id="modal-rate">
+<div class="modal">
+<button class="modal-close" onclick="hideModal('rate')">×</button>
+<h3 class="modal-title">Rate Level</h3>
+<div class="form-group"><label class="form-label">Difficulty</label><div class="rate-grid" id="rateOptions"></div></div>
+<button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="submitRating()">Submit</button>
+</div>
+</div>
+<div class="modal-overlay" id="modal-editprofile">
+<div class="modal">
+<button class="modal-close" onclick="hideModal('editprofile')">×</button>
+<h3 class="modal-title">Edit Profile</h3>
+<div class="form-group"><label class="form-label">Profile Picture</label><div class="pfp-upload" id="editPfpUpload" onclick="document.getElementById('editPfpInput').click()"><span class="pfp-upload-text">Click to<br>upload</span></div><input type="file" id="editPfpInput" accept="image/*"></div>
+<div class="form-group"><label class="form-label">Display Name</label><input type="text" class="form-input" id="editName"></div>
+<div class="form-group"><label class="form-label">Tag</label><input type="text" class="form-input" id="editTag" maxlength="20"></div>
+<div class="form-group"><label class="form-label">YouTube</label><input type="text" class="form-input" id="editYoutube" placeholder="channel url"></div>
+<div class="form-group"><label class="form-label">Twitter/X</label><input type="text" class="form-input" id="editTwitter" placeholder="@handle"></div>
+<div class="form-group"><label class="form-label">Discord</label><input type="text" class="form-input" id="editDiscord" placeholder="username"></div>
+<button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="saveProfile()">Save</button>
+</div>
+</div>
+<div class="modal-overlay" id="modal-modcp">
+<div class="modal">
+<button class="modal-close" onclick="hideModal('modcp')">×</button>
+<h3 class="modal-title">Give Creator Points</h3>
+<div class="form-group"><label class="form-label">Amount</label><input type="number" class="form-input" id="cpAmount" min="1" value="1"></div>
+<button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="giveCP()">Give CP</button>
+</div>
+</div>
+<div class="modal-overlay" id="modal-newpost">
+<div class="modal">
+<button class="modal-close" onclick="hideModal('newpost')">×</button>
+<h3 class="modal-title">New Forum Post</h3>
+<div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="postTitle"></div>
+<div class="form-group"><label class="form-label">Content</label><textarea class="form-input" id="postContent" style="min-height:80px"></textarea></div>
+<button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="createForumPost()">Post</button>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const CONFIG={apiKey:"AIzaSyCSij_RuIMnMtTYhMGxP5WcOeJl_C0DFQI",authDomain:"deckinjector.firebaseapp.com",projectId:"deckinjector"}
+const FS=`https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents`
+const AUTH='https://identitytoolkit.googleapis.com/v1/accounts'
+const DIFFS=['unrated','auto','easy','normal','hard','harder','insane','demon','easy_demon','medium_demon','extreme_demon']
+let user=null,token=null,refresh=null,levels=[],selDiff='unrated',rateLevelId=null,cpUserId=null,regPfpData=null,editPfpData=null,gameActive=false
+function init(){
+genRateOptions()
+loadAuth()
+loadLevels()
+loadUpdates()
+loadForums()
+loadLeaderboard()
+setupPfpUploads()
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>{
+const wasPlay=document.querySelector('.nav-btn.active')?.dataset.page==='play'
+document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'))
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'))
+b.classList.add('active')
+document.getElementById('page-'+b.dataset.page).classList.add('active')
+if(wasPlay&&b.dataset.page!=='play')stopGame()
+if(b.dataset.page==='play')loadSidebarLevels()
+}))
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');loadLevels(t.dataset.sort)}))
+document.getElementById('searchInput').addEventListener('keypress',e=>{if(e.key==='Enter')searchLevels()})
+document.addEventListener('click',e=>{if(!e.target.closest('.header-right'))document.querySelector('.dropdown')?.classList.remove('show')})
+}
+function setupPfpUploads(){
+document.getElementById('regPfpInput').onchange=e=>{const f=e.target.files[0];if(f)readImg(f,d=>{regPfpData=d;document.getElementById('regPfpUpload').innerHTML=`<img src="${d}">`})}
+document.getElementById('editPfpInput').onchange=e=>{const f=e.target.files[0];if(f)readImg(f,d=>{editPfpData=d;document.getElementById('editPfpUpload').innerHTML=`<img src="${d}">`})}
+}
+function readImg(f,cb){const r=new FileReader();r.onload=e=>cb(e.target.result);r.readAsDataURL(f)}
+function genRateOptions(){
+const c=document.getElementById('rateOptions')
+DIFFS.forEach(d=>{const div=document.createElement('div');div.className='rate-opt'+(d==='unrated'?' selected':'');div.innerHTML=`<img src="faces/${d}.png">`;div.onclick=()=>{c.querySelectorAll('.rate-opt').forEach(x=>x.classList.remove('selected'));div.classList.add('selected');selDiff=d};c.appendChild(div)})
+}
+function loadAuth(){const s=localStorage.getItem('di_auth');if(s){try{const d=JSON.parse(s);user=d.user;token=d.token;refresh=d.refresh;if(d.time&&Date.now()-d.time>50*60*1000)refreshToken();updateAuthUI()}catch(e){}}}
+function saveAuth(){if(user&&token)localStorage.setItem('di_auth',JSON.stringify({user,token,refresh,time:Date.now()}));else localStorage.removeItem('di_auth')}
+async function refreshToken(){if(!refresh)return;try{const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${CONFIG.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({grant_type:'refresh_token',refresh_token:refresh})});if(r.ok){const d=await r.json();token=d.id_token;refresh=d.refresh_token;saveAuth()}}catch(e){}}
+function updateAuthUI(){
+const el=document.getElementById('headerAuth')
+if(user){
+const badge=user.role&&user.role!=='user'?`<img src="badges/mod_${user.role==='elder_mod'?'gold':user.role==='mod'?'blue':'pink'}.png" class="mod-badge">`:''
+const pfp=user.pfp||'https://via.placeholder.com/26/333/fff?text='+(user.displayName||'U')[0].toUpperCase()
+el.innerHTML=`<div class="user-pill" onclick="toggleDropdown()"><img class="user-pfp" src="${pfp}"><span>${user.displayName||'User'}</span>${badge}</div><div class="dropdown" id="userDropdown"><div class="dropdown-item" onclick="showProfile('${user.uid}')">👤 Profile</div><div class="dropdown-item" onclick="showModal('editprofile');populateEdit()">✏️ Edit</div><div class="dropdown-item danger" onclick="logout()">🚪 Logout</div></div>`
+}else{el.innerHTML=`<button class="btn btn-outline btn-small" onclick="showModal('login')">Login</button><button class="btn btn-primary btn-small" onclick="showModal('register')">Sign Up</button>`}
+checkModUI()
+}
+function toggleDropdown(){document.getElementById('userDropdown')?.classList.toggle('show')}
+function checkModUI(){document.getElementById('updateLogEditor').style.display=user?.role==='elder_mod'?'block':'none'}
+function populateEdit(){
+if(!user)return
+document.getElementById('editName').value=user.displayName||''
+document.getElementById('editTag').value=user.tag||''
+document.getElementById('editYoutube').value=user.youtube||''
+document.getElementById('editTwitter').value=user.twitter||''
+document.getElementById('editDiscord').value=user.discord||''
+if(user.pfp)document.getElementById('editPfpUpload').innerHTML=`<img src="${user.pfp}">`
+editPfpData=null
+}
+async function googleSignIn(){
+const provider='google.com'
+const authUrl=`https://accounts.google.com/o/oauth2/v2/auth?client_id=750541071945-placeholder.apps.googleusercontent.com&redirect_uri=${encodeURIComponent(location.origin)}&response_type=token&scope=email%20profile`
+showToast('Google Sign-In requires hosting setup. Use email for now.',true)
+}
+async function login(){
+const email=document.getElementById('loginEmail').value.trim(),pw=document.getElementById('loginPassword').value
+if(!email||!pw){showToast('Fill all fields',true);return}
+try{
+const r=await fetch(`${AUTH}:signInWithPassword?key=${CONFIG.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw,returnSecureToken:true})})
+const d=await r.json();if(!r.ok)throw new Error(d.error?.message||'Login failed')
+const ud=await fetchUser(d.localId)
+user={uid:d.localId,email:d.email,...ud}
+token=d.idToken;refresh=d.refreshToken
+saveAuth();updateAuthUI();hideModal('login');showToast('Welcome!')
+}catch(e){showToast(e.message,true)}
+}
+async function register(){
+const name=document.getElementById('registerName').value.trim(),tag=document.getElementById('registerTag').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,''),email=document.getElementById('registerEmail').value.trim(),pw=document.getElementById('registerPassword').value
+if(!name||!tag||!email||!pw){showToast('Fill all fields',true);return}
+if(pw.length<6){showToast('Password: 6+ chars',true);return}
+try{
+const r=await fetch(`${AUTH}:signUp?key=${CONFIG.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw,returnSecureToken:true})})
+const d=await r.json();if(!r.ok)throw new Error(d.error?.message||'Signup failed')
+await createUser(d.localId,name,tag,email,regPfpData,d.idToken)
+user={uid:d.localId,email,displayName:name,tag,role:'user',pfp:regPfpData,cubes:0,cp:0}
+token=d.idToken;refresh=d.refreshToken
+saveAuth();updateAuthUI();hideModal('register');showToast('Account created!')
+}catch(e){showToast(e.message,true)}
+}
+async function createUser(uid,name,tag,email,pfp,tk){
+const fields={displayName:{stringValue:name},tag:{stringValue:tag},email:{stringValue:email},role:{stringValue:'user'},cubes:{integerValue:'0'},cp:{integerValue:'0'},createdAt:{timestampValue:new Date().toISOString()}}
+if(pfp)fields.pfp={stringValue:pfp}
+await fetch(`${FS}/users?documentId=${uid}`,{method:'POST',headers:{'Authorization':`Bearer ${tk}`,'Content-Type':'application/json'},body:JSON.stringify({fields})})
+}
+async function fetchUser(uid){
+try{const r=await fetch(`${FS}/users/${uid}`);if(!r.ok)return{displayName:'User',tag:'user',role:'user',cubes:0,cp:0};const d=await r.json();const f=d.fields||{};return{displayName:f.displayName?.stringValue||'User',tag:f.tag?.stringValue||'user',role:f.role?.stringValue||'user',pfp:f.pfp?.stringValue||'',cubes:parseInt(f.cubes?.integerValue||'0'),cp:parseInt(f.cp?.integerValue||'0'),youtube:f.youtube?.stringValue||'',twitter:f.twitter?.stringValue||'',discord:f.discord?.stringValue||''}}catch(e){return{displayName:'User',tag:'user',role:'user',cubes:0,cp:0}}
+}
+async function saveProfile(){
+if(!user||!token)return
+const name=document.getElementById('editName').value.trim(),tag=document.getElementById('editTag').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,''),youtube=document.getElementById('editYoutube').value.trim(),twitter=document.getElementById('editTwitter').value.trim(),discord=document.getElementById('editDiscord').value.trim()
+if(!name||!tag){showToast('Name and tag required',true);return}
+const fields={displayName:{stringValue:name},tag:{stringValue:tag},youtube:{stringValue:youtube},twitter:{stringValue:twitter},discord:{stringValue:discord}}
+let mask='updateMask.fieldPaths=displayName&updateMask.fieldPaths=tag&updateMask.fieldPaths=youtube&updateMask.fieldPaths=twitter&updateMask.fieldPaths=discord'
+if(editPfpData){fields.pfp={stringValue:editPfpData};mask+='&updateMask.fieldPaths=pfp'}
+try{
+await fetch(`${FS}/users/${user.uid}?${mask}`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields})})
+user.displayName=name;user.tag=tag;user.youtube=youtube;user.twitter=twitter;user.discord=discord
+if(editPfpData)user.pfp=editPfpData
+saveAuth();updateAuthUI();hideModal('editprofile');showToast('Profile updated!')
+}catch(e){showToast('Failed',true)}
+}
+function logout(){user=null;token=null;refresh=null;saveAuth();updateAuthUI();showToast('Logged out')}
+async function loadLevels(orderBy='downloads'){
+document.getElementById('levelsList').innerHTML='<div class="loading"><div class="spinner"></div>Loading...</div>'
+try{
+const q={structuredQuery:{from:[{collectionId:'presets'}],orderBy:[{field:{fieldPath:orderBy},direction:'DESCENDING'}],limit:50}}
+const r=await fetch(`${FS}:runQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)})
+if(!r.ok)throw new Error('Failed')
+const res=await r.json()
+levels=res.filter(x=>x.document).map(parseLevel)
+renderLevels(levels)
+}catch(e){document.getElementById('levelsList').innerHTML='<div class="empty">No levels yet</div>'}
+}
+function parseLevel(doc){const f=doc.document.fields||{},id=doc.document.name.split('/').pop();return{id,levelId:parseInt(f.levelId?.integerValue||'0'),name:f.name?.stringValue||'Untitled',description:f.description?.stringValue||'',authorName:f.authorName?.stringValue||'Anonymous',authorId:f.authorId?.stringValue||'',authorTag:f.authorTag?.stringValue||'',difficulty:f.difficulty?.stringValue||'unrated',song:f.song?.stringValue||'Unknown',levelData:f.levelData?.stringValue||'',downloads:parseInt(f.downloads?.integerValue||'0')}}
+function renderLevels(list){
+if(!list.length){document.getElementById('levelsList').innerHTML='<div class="empty">No levels. Upload one!</div>';return}
+document.getElementById('levelsList').innerHTML=list.map(l=>`<div class="level-card" onclick="showLevelDetail('${l.id}')"><img src="faces/${l.difficulty}.png" class="level-face"><div class="level-info"><div class="level-name">${esc(l.name)}</div><div class="level-author">by ${esc(l.authorName)} <span style="color:#557788">@${esc(l.authorTag)}</span></div></div><span class="level-id">#${l.levelId}</span><div class="level-stats">⬇️ ${l.downloads}</div></div>`).join('')
+}
+function searchLevels(){const q=document.getElementById('searchInput').value.toLowerCase().trim();if(!q){renderLevels(levels);return};renderLevels(levels.filter(l=>l.name.toLowerCase().includes(q)||l.authorName.toLowerCase().includes(q)||String(l.levelId).includes(q)))}
+function showLevelDetail(id){
+const l=levels.find(x=>x.id===id);if(!l)return
+const isMod=user&&['helper_mod','mod','elder_mod'].includes(user.role)
+const isOwner=user&&user.uid===l.authorId
+document.getElementById('page-level').innerHTML=`
+<button class="btn btn-outline btn-small" onclick="backToLevels()" style="margin-bottom:8px">← Back</button>
+<div class="profile-header" style="border-color:#1a3a5a">
+<img src="faces/${l.difficulty}.png" style="width:60px;height:60px">
+<div class="profile-info">
+<div class="profile-name">${esc(l.name)}<span class="level-id" style="margin-left:8px">#${l.levelId}</span></div>
+<div class="profile-tag">by <a onclick="showProfile('${l.authorId}')" style="color:#00ff88;cursor:pointer">${esc(l.authorName)}</a> @${esc(l.authorTag)} • ${esc(l.song)}</div>
+<div style="font-size:10px;color:#88aabb;margin-top:4px">${esc(l.description)||'No description'}</div>
+<div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+<button class="btn btn-primary" onclick="downloadLevel('${l.id}')">⬇️ Download</button>
+<button class="btn btn-play" onclick="playLevel('${l.id}')">▶️ Play</button>
+${isMod?`<button class="btn btn-secondary" onclick="openRateModal('${l.id}')">⭐ Rate</button>`:''}
+${isOwner?`<img src="delete.png" class="delete-btn" onclick="deleteLevel('${l.id}')" title="Delete">`:''}
+</div>
+</div>
+</div>
+<div class="section-title">Comments</div>
+<div id="commentsSection"><div class="loading"><div class="spinner"></div></div></div>
+${user?`<div style="margin-top:8px"><textarea class="form-input" id="commentText" placeholder="Write a comment..."></textarea><button class="btn btn-primary btn-small" style="margin-top:4px" onclick="postComment('${l.id}')">Post</button></div>`:''}
+`
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'))
+document.getElementById('page-level').classList.add('active')
+document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'))
+loadComments(l.id)
+}
+function backToLevels(){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-levels').classList.add('active');document.querySelector('[data-page="levels"]').classList.add('active')}
+async function loadComments(levelId){
+try{
+const q={structuredQuery:{from:[{collectionId:'comments'}],where:{fieldFilter:{field:{fieldPath:'levelId'},op:'EQUAL',value:{stringValue:levelId}}},orderBy:[{field:{fieldPath:'createdAt'},direction:'DESCENDING'}],limit:50}}
+const r=await fetch(`${FS}:runQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)})
+const res=await r.json()
+const comments=res.filter(x=>x.document).map(d=>{const f=d.document.fields||{};return{userName:f.userName?.stringValue||'User',userTag:f.userTag?.stringValue||'',userPfp:f.userPfp?.stringValue||'',text:f.text?.stringValue||'',createdAt:f.createdAt?.timestampValue}})
+if(!comments.length){document.getElementById('commentsSection').innerHTML='<div class="empty" style="padding:14px">No comments yet</div>';return}
+document.getElementById('commentsSection').innerHTML=comments.map(c=>{const pfp=c.userPfp||'https://via.placeholder.com/20/333/fff?text='+c.userName[0].toUpperCase();return`<div class="forum-post" style="padding:8px 10px"><div class="forum-post-header"><img src="${pfp}" class="forum-post-pfp" style="width:20px;height:20px"><span class="forum-post-author">${esc(c.userName)} <span style="color:#557788">@${esc(c.userTag)}</span></span><span class="forum-post-time">${timeAgo(c.createdAt)}</span></div><div class="forum-post-content" style="font-size:10px">${esc(c.text)}</div></div>`}).join('')
+}catch(e){document.getElementById('commentsSection').innerHTML='<div class="empty">Failed</div>'}
+}
+async function postComment(levelId){
+if(!user){showToast('Login first',true);return}
+const text=document.getElementById('commentText').value.trim();if(!text){showToast('Write something',true);return}
+try{
+await fetch(`${FS}/comments`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields:{levelId:{stringValue:levelId},userId:{stringValue:user.uid},userName:{stringValue:user.displayName},userTag:{stringValue:user.tag||''},userPfp:{stringValue:user.pfp||''},text:{stringValue:text},createdAt:{timestampValue:new Date().toISOString()}}})})
+document.getElementById('commentText').value='';loadComments(levelId);showToast('Posted!')
+}catch(e){showToast('Failed',true)}
+}
+function openRateModal(id){rateLevelId=id;selDiff='unrated';document.querySelectorAll('.rate-opt').forEach((x,i)=>x.classList.toggle('selected',i===0));showModal('rate')}
+async function submitRating(){if(!rateLevelId||!user)return;try{await fetch(`${FS}/presets/${rateLevelId}?updateMask.fieldPaths=difficulty`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields:{difficulty:{stringValue:selDiff}}})});hideModal('rate');showToast('Rated!');loadLevels()}catch(e){showToast('Failed',true)}}
+async function deleteLevel(id){
+if(!confirm('Delete this level?'))return
+try{await fetch(`${FS}/presets/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});showToast('Deleted!');backToLevels();loadLevels()}catch(e){showToast('Failed',true)}
+}
+async function downloadLevel(id){
+const l=levels.find(x=>x.id===id);if(!l||!l.levelData){showToast('No data',true);return}
+try{const r=await fetch(`${FS}/presets/${id}`);const doc=await r.json();const curr=parseInt(doc.fields?.downloads?.integerValue||'0');await fetch(`${FS}/presets/${id}?updateMask.fieldPaths=downloads`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{downloads:{integerValue:String(curr+1)}}})});l.downloads=curr+1}catch(e){}
+const blob=new Blob([l.levelData],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='1.txt';a.click();URL.revokeObjectURL(url);showToast('Downloaded!')
+}
+function playLevel(id){
+const l=levels.find(x=>x.id===id);if(!l)return
+localStorage.setItem('di_play_level',JSON.stringify({name:l.name,data:l.levelData}))
+document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'))
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'))
+document.querySelector('[data-page="play"]').classList.add('active')
+document.getElementById('page-play').classList.add('active')
+startGame();showToast('Level loaded!')
+}
+function loadSidebarLevels(){
+const sb=document.getElementById('sidebarLevels')
+if(!levels.length){sb.innerHTML='<div class="empty" style="padding:10px">No levels</div>';return}
+sb.innerHTML=levels.slice(0,30).map(l=>`<div class="sidebar-level" onclick="playLevelDirect('${l.id}')"><div class="sidebar-level-name">${esc(l.name)}</div><div class="sidebar-level-author">by ${esc(l.authorName)}</div></div>`).join('')
+}
+function playLevelDirect(id){const l=levels.find(x=>x.id===id);if(!l)return;localStorage.setItem('di_play_level',JSON.stringify({name:l.name,data:l.levelData}));startGame();showToast('Playing: '+l.name)}
+function startGame(){gameActive=true;document.getElementById('gameContainer').innerHTML='<iframe class="game-frame" src="https://web-dashers.github.io" allow="autoplay;fullscreen"></iframe>'}
+function stopGame(){gameActive=false;document.getElementById('gameContainer').innerHTML='<div class="game-placeholder">Select a level from the list →</div>'}
+function showUploadModal(){if(!user){showModal('login');showToast('Login to upload',true);return};showModal('upload')}
+async function uploadLevel(){
+if(!user){showToast('Login first',true);return}
+await refreshToken();if(!token){showToast('Session expired',true);logout();return}
+const name=document.getElementById('uploadName').value.trim(),song=document.getElementById('uploadSong').value.trim()||'Unknown',desc=document.getElementById('uploadDesc').value.trim(),data=document.getElementById('uploadData').value.trim()
+if(!name){showToast('Enter name',true);return};if(!data){showToast('Enter level data',true);return}
+const btn=document.getElementById('uploadBtn');btn.disabled=true;btn.textContent='Uploading...'
+try{
+const idRes=await fetch(`${FS}:runQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({structuredQuery:{from:[{collectionId:'presets'}],orderBy:[{field:{fieldPath:'levelId'},direction:'DESCENDING'}],limit:1}})});const idData=await idRes.json();let nextId=1;if(idData[0]?.document?.fields?.levelId)nextId=parseInt(idData[0].document.fields.levelId.integerValue||'0')+1
+await fetch(`${FS}/presets`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields:{levelId:{integerValue:String(nextId)},name:{stringValue:name},description:{stringValue:desc},difficulty:{stringValue:'unrated'},song:{stringValue:song},authorId:{stringValue:user.uid},authorName:{stringValue:user.displayName||'Anonymous'},authorTag:{stringValue:user.tag||''},levelData:{stringValue:data},downloads:{integerValue:'0'},createdAt:{timestampValue:new Date().toISOString()}}})})
+const newCubes=(user.cubes||0)+10
+await fetch(`${FS}/users/${user.uid}?updateMask.fieldPaths=cubes`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields:{cubes:{integerValue:String(newCubes)}}})})
+user.cubes=newCubes;saveAuth()
+document.getElementById('uploadName').value='';document.getElementById('uploadSong').value='';document.getElementById('uploadDesc').value='';document.getElementById('uploadData').value=''
+hideModal('upload');showToast('Uploaded! +10 Cubes');loadLevels()
+}catch(e){showToast(e.message||'Failed',true)}finally{btn.disabled=false;btn.textContent='Upload (+10 Cubes)'}
+}
+async function showProfile(uid){
+document.getElementById('page-profile').innerHTML='<div class="loading"><div class="spinner"></div></div>'
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'))
+document.getElementById('page-profile').classList.add('active')
+document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'))
+try{
+const ud=await fetchUser(uid);if(!ud||!ud.displayName){document.getElementById('page-profile').innerHTML='<div class="empty">User not found</div>';return}
+const userLevels=levels.filter(l=>l.authorId===uid)
+const badge=ud.role!=='user'?`<img src="badges/mod_${ud.role==='elder_mod'?'gold':ud.role==='mod'?'blue':'pink'}.png" style="width:16px;height:16px">`:''
+const roleText={user:'Player',helper_mod:'Helper Mod',mod:'Moderator',elder_mod:'Elder Mod'}
+const pfp=ud.pfp||'https://via.placeholder.com/60/333/fff?text='+(ud.displayName||'U')[0].toUpperCase()
+const isMod=user&&['mod','elder_mod'].includes(user.role)
+let socials=''
+if(ud.youtube)socials+=`<a class="social-link" href="${ud.youtube}" target="_blank">YouTube</a>`
+if(ud.twitter)socials+=`<a class="social-link" href="https://twitter.com/${ud.twitter.replace('@','')}" target="_blank">Twitter</a>`
+if(ud.discord)socials+=`<span class="social-link">${ud.discord}</span>`
+document.getElementById('page-profile').innerHTML=`
+<button class="btn btn-outline btn-small" onclick="backToLevels()" style="margin-bottom:8px">← Back</button>
+<div class="profile-header"><img src="${pfp}" class="profile-pfp"><div class="profile-info"><div class="profile-name">${badge}${esc(ud.displayName)}</div><div class="profile-tag">@${esc(ud.tag||'user')}</div><div class="profile-role">${roleText[ud.role]||'Player'}</div><div class="profile-stats"><span><img src="cp.png">${ud.cp||0} CP</span><span>🟩 ${ud.cubes||0} Cubes</span><span>${userLevels.length} levels</span></div>${socials?`<div class="profile-socials">${socials}</div>`:''}</div>${isMod?`<button class="btn btn-secondary btn-small" onclick="openCPModal('${uid}')" style="margin-left:auto">Give CP</button>`:''}</div>
+<div class="section-title">Levels</div>
+<div class="levels-list">${userLevels.length?userLevels.map(l=>`<div class="level-card" onclick="showLevelDetail('${l.id}')"><img src="faces/${l.difficulty}.png" class="level-face"><div class="level-info"><div class="level-name">${esc(l.name)}</div></div><span class="level-id">#${l.levelId}</span><div class="level-stats">⬇️ ${l.downloads}</div></div>`).join(''):'<div class="empty">No levels</div>'}</div>
+`
+}catch(e){document.getElementById('page-profile').innerHTML='<div class="empty">Error</div>'}
+}
+function openCPModal(uid){cpUserId=uid;showModal('modcp')}
+async function giveCP(){
+if(!cpUserId||!user)return
+const amount=parseInt(document.getElementById('cpAmount').value)||1
+try{
+const r=await fetch(`${FS}/users/${cpUserId}`);const d=await r.json();const curr=parseInt(d.fields?.cp?.integerValue||'0')
+await fetch(`${FS}/users/${cpUserId}?updateMask.fieldPaths=cp`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields:{cp:{integerValue:String(curr+amount)}}})})
+hideModal('modcp');showToast(`Gave ${amount} CP!`);showProfile(cpUserId)
+}catch(e){showToast('Failed',true)}
+}
+async function loadLeaderboard(){
+const list=document.getElementById('lbList')
+try{
+const q={structuredQuery:{from:[{collectionId:'users'}],orderBy:[{field:{fieldPath:'cp'},direction:'DESCENDING'}],limit:100}}
+const r=await fetch(`${FS}:runQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)})
+const res=await r.json()
+const users=res.filter(x=>x.document).map(d=>{const f=d.document.fields||{};return{uid:d.document.name.split('/').pop(),displayName:f.displayName?.stringValue||'User',tag:f.tag?.stringValue||'',pfp:f.pfp?.stringValue||'',cp:parseInt(f.cp?.integerValue||'0'),cubes:parseInt(f.cubes?.integerValue||'0')}}).filter(u=>u.cp>0||u.cubes>0)
+if(!users.length){list.innerHTML='<div class="empty" style="padding:20px">No ranked players yet</div>';return}
+list.innerHTML=users.map((u,i)=>{const pfp=u.pfp||'https://via.placeholder.com/32/333/fff?text='+u.displayName[0].toUpperCase();return`<div class="lb-row" onclick="showProfile('${u.uid}')" style="cursor:pointer"><div class="lb-rank">${i+1}</div><div class="lb-user"><img src="${pfp}" class="lb-pfp"><span class="lb-name">${esc(u.displayName)}</span></div><div class="lb-stats"><span><img src="cp.png">${u.cp}</span><span>🟩 ${u.cubes}</span></div></div>`}).join('')
+}catch(e){list.innerHTML='<div class="empty">Failed to load</div>'}
+}
+async function loadForums(){
+const container=document.getElementById('forumPosts')
+try{
+const q={structuredQuery:{from:[{collectionId:'forums'}],orderBy:[{field:{fieldPath:'createdAt'},direction:'DESCENDING'}],limit:50}}
+const r=await fetch(`${FS}:runQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)})
+const res=await r.json()
+const posts=res.filter(x=>x.document).map(d=>{const f=d.document.fields||{};return{id:d.document.name.split('/').pop(),title:f.title?.stringValue||'',content:f.content?.stringValue||'',authorName:f.authorName?.stringValue||'User',authorTag:f.authorTag?.stringValue||'',authorPfp:f.authorPfp?.stringValue||'',createdAt:f.createdAt?.timestampValue,replies:parseInt(f.replies?.integerValue||'0')}})
+if(!posts.length){container.innerHTML='<div class="empty">No posts yet. Be the first!</div>';return}
+container.innerHTML=posts.map(p=>{const pfp=p.authorPfp||'https://via.placeholder.com/28/333/fff?text='+p.authorName[0].toUpperCase();return`<div class="forum-post"><div class="forum-post-header"><img src="${pfp}" class="forum-post-pfp"><span class="forum-post-author">${esc(p.authorName)} <span style="color:#557788">@${esc(p.authorTag)}</span></span><span class="forum-post-time">${timeAgo(p.createdAt)}</span></div><div class="forum-post-title">${esc(p.title)}</div><div class="forum-post-content">${esc(p.content).slice(0,200)}${p.content.length>200?'...':''}</div><div class="forum-post-footer"><span>💬 ${p.replies} replies</span></div></div>`}).join('')
+}catch(e){container.innerHTML='<div class="empty">Failed to load</div>'}
+}
+async function createForumPost(){
+if(!user){showToast('Login first',true);return}
+const title=document.getElementById('postTitle').value.trim(),content=document.getElementById('postContent').value.trim()
+if(!title||!content){showToast('Fill all fields',true);return}
+try{
+await fetch(`${FS}/forums`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields:{title:{stringValue:title},content:{stringValue:content},authorId:{stringValue:user.uid},authorName:{stringValue:user.displayName},authorTag:{stringValue:user.tag||''},authorPfp:{stringValue:user.pfp||''},replies:{integerValue:'0'},createdAt:{timestampValue:new Date().toISOString()}}})})
+document.getElementById('postTitle').value='';document.getElementById('postContent').value='';hideModal('newpost');showToast('Posted!');loadForums()
+}catch(e){showToast('Failed',true)}
+}
+async function loadUpdates(){
+try{
+const q={structuredQuery:{from:[{collectionId:'updates'}],orderBy:[{field:{fieldPath:'createdAt'},direction:'DESCENDING'}],limit:20}}
+const r=await fetch(`${FS}:runQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)})
+const res=await r.json()
+const updates=res.filter(x=>x.document).map(d=>{const f=d.document.fields||{};return{text:f.text?.stringValue||'',author:f.author?.stringValue||'',createdAt:f.createdAt?.timestampValue}})
+if(!updates.length){document.getElementById('updateLogContent').innerHTML='<div class="update-log"><div class="empty" style="padding:14px">No updates yet</div></div>';return}
+document.getElementById('updateLogContent').innerHTML=`<div class="update-log">${updates.map(u=>`<div class="update-entry"><div class="update-date">${formatDate(u.createdAt)} - ${esc(u.author)}</div><div class="update-text">${esc(u.text)}</div></div>`).join('')}</div>`
+}catch(e){document.getElementById('updateLogContent').innerHTML='<div class="empty">Failed</div>'}
+}
+async function postUpdate(){if(!user||user.role!=='elder_mod')return;const text=document.getElementById('newUpdateText').value.trim();if(!text){showToast('Write something',true);return};try{await fetch(`${FS}/updates`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({fields:{text:{stringValue:text},author:{stringValue:user.displayName},createdAt:{timestampValue:new Date().toISOString()}}})});document.getElementById('newUpdateText').value='';loadUpdates();showToast('Posted!')}catch(e){showToast('Failed',true)}}
+function showModal(n){document.getElementById('modal-'+n)?.classList.add('show')}
+function hideModal(n){document.getElementById('modal-'+n)?.classList.remove('show')}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}))
+function showToast(m,err=false){const t=document.getElementById('toast');t.textContent=m;t.className='toast'+(err?' error':'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+function timeAgo(ts){if(!ts)return'';const s=Math.floor((Date.now()-new Date(ts))/1000);if(s<60)return'now';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d'}
+function formatDate(ts){if(!ts)return'';return new Date(ts).toLocaleDateString()}
+init()
+</script>
+</body>
+</html>
